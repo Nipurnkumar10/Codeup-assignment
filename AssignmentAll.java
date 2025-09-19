@@ -1,119 +1,169 @@
+/**
+ * Assignment: 1
+ * Author: Nipurn Kumar
+ */
+
 import java.util.Scanner;
 
 public class AssignmentAll {
 
-    // ----------------- Task 1 -----------------
-    // Expand encoded string like "a1b4c3" -> "abbbbccc"
-    public static String expand(String s) {
-        if (s == null || s.length() == 0) return "";
-        StringBuilder result = new StringBuilder();
-        int i = 0, n = s.length();
-        while (i < n) {
-            char ch = s.charAt(i);
-            if (!Character.isLetter(ch)) {
-                i++;
-                continue; // skip invalid
+    // ---------- Helper Methods ----------
+    public static boolean isDigit(char character) {
+        return character >= '0' && character <= '9';
+    }
+
+    public static int toDigit(char character) {
+        return character - '0';
+    }
+
+    public static int customSqrt(int number) {
+        int result = 0;
+        while ((result + 1) * (result + 1) <= number) {
+            result++;
+        }
+        return result;
+    }
+
+    // ---------- Task 1 ----------
+    public static String expandEncodedString(String inputString) {
+        String expandedResult = "";
+        int index = 0;
+
+        while (index < inputString.length()) {
+            char currentCharacter = inputString.charAt(index);
+
+            if ((currentCharacter < 'a' || currentCharacter > 'z')) {
+                index++;
+                continue;
             }
-            i++;
+            index++;
+
             int count = 0;
-            boolean gotDigit = false;
-            while (i < n && Character.isDigit(s.charAt(i))) {
-                gotDigit = true;
-                count = count * 10 + (s.charAt(i) - '0');
-                i++;
+            boolean digitFound = false;
+            while (index < inputString.length() && isDigit(inputString.charAt(index))) {
+                digitFound = true;
+                count = count * 10 + toDigit(inputString.charAt(index));
+                index++;
             }
-            if (!gotDigit) count = 1; // default
-            for (int k = 0; k < count; k++) result.append(ch);
+            if (!digitFound) {
+                count = 1;
+            }
+
+            for (int repeat = 0; repeat < count; repeat++) {
+                expandedResult = expandedResult + currentCharacter;
+            }
         }
-        return result.toString();
+        return expandedResult;
     }
 
-    // ----------------- Task 2 -----------------
-    // Run-length encoding: "aabcccdeee" -> "a2b1c3d1e3"
-    public static String compressRuns(String s) {
-        if (s == null || s.isEmpty()) return "";
-        StringBuilder sb = new StringBuilder();
-        int n = s.length();
-        int i = 0;
-        while (i < n) {
-            char c = s.charAt(i);
+    // ---------- Task 2 ----------
+    public static String compressRuns(String inputString) {
+        String compressedResult = "";
+        int index = 0;
+
+        while (index < inputString.length()) {
+            char currentCharacter = inputString.charAt(index);
             int count = 1;
-            i++;
-            while (i < n && s.charAt(i) == c) {
+            index++;
+
+            while (index < inputString.length() && inputString.charAt(index) == currentCharacter) {
                 count++;
-                i++;
+                index++;
             }
-            sb.append(c).append(count);
+            compressedResult = compressedResult + currentCharacter + count;
         }
-        return sb.toString();
+        return compressedResult;
     }
 
-    // ----------------- Task 3 -----------------
-    // Prime number checker
-    public static boolean isPrime(int n) {
-        if (n <= 1) return false;
-        if (n <= 3) return true;
-        if (n % 2 == 0) return false;
-        int limit = (int) Math.sqrt(n);
-        for (int i = 3; i <= limit; i += 2) {
-            if (n % i == 0) return false;
+    // ---------- Task 3 ----------
+    public static boolean isPrime(int number) {
+        if (number <= 1) return false;
+        if (number <= 3) return true;
+        if (number % 2 == 0) return false;
+
+        int limit = customSqrt(number);
+        int divisor = 3;
+
+        while (divisor <= limit) {
+            if (number % divisor == 0) return false;
+            divisor += 2;
         }
         return true;
     }
 
-    // ----------------- Task 4 -----------------
-    // Number to words (1..1000)
-    private static final String[] below20 = {
+    // ---------- Task 4 ----------
+    private static final String[] belowTwenty = {
         "", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
         "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
         "seventeen", "eighteen", "nineteen"
     };
-    private static final String[] tens = {
+    private static final String[] tensArray = {
         "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
     };
-    public static String numberToWords(int num) {
-        if (num <= 0 || num > 1000) throw new IllegalArgumentException("Number must be 1..1000");
-        if (num == 1000) return "one thousand";
-        StringBuilder sb = new StringBuilder();
-        if (num >= 100) {
-            int h = num / 100;
-            sb.append(below20[h]).append(" hundred");
-            num %= 100;
-            if (num != 0) sb.append(" ");
-        }
-        if (num >= 20) {
-            int t = num / 10;
-            sb.append(tens[t]);
-            int rem = num % 10;
-            if (rem != 0) sb.append(" ").append(below20[rem]);
-        } else if (num > 0) {
-            sb.append(below20[num]);
-        }
-        return sb.toString().trim();
-    }
 
-    // ----------------- Task 5 -----------------
-    // Longest substring without repeating characters
-    public static int lengthOfLongestSubstring(String s) {
-        if (s == null) return 0;
-        int n = s.length();
-        int[] lastIndex = new int[256];
-        for (int i = 0; i < lastIndex.length; i++) lastIndex[i] = -1;
-        int maxLen = 0, left = 0;
-        for (int right = 0; right < n; right++) {
-            char c = s.charAt(right);
-            if (lastIndex[c] >= left) {
-                left = lastIndex[c] + 1;
+    public static String numberToWords(int number) {
+        if (number <= 0 || number > 1000) {
+            return "invalid input";
+        }
+        if (number == 1000) {
+            return "one thousand";
+        }
+
+        String wordsResult = "";
+
+        if (number >= 100) {
+            int hundreds = number / 100;
+            wordsResult = wordsResult + belowTwenty[hundreds] + " hundred";
+            number = number % 100;
+            if (number != 0) wordsResult = wordsResult + " ";
+        }
+
+        if (number >= 20) {
+            int tens = number / 10;
+            wordsResult = wordsResult + tensArray[tens];
+            int remainder = number % 10;
+            if (remainder != 0) {
+                wordsResult = wordsResult + " " + belowTwenty[remainder];
             }
-            lastIndex[c] = right;
-            maxLen = Math.max(maxLen, right - left + 1);
+        } else if (number > 0) {
+            wordsResult = wordsResult + belowTwenty[number];
         }
-        return maxLen;
+
+        return wordsResult.trim();
     }
 
-    // ----------------- Main Menu -----------------
+    // ---------- Task 5 ----------
+    public static int lengthOfLongestSubstring(String inputString) {
+        if (inputString == null) return 0;
+
+        int[] lastSeenIndex = new int[256];
+        for (int i = 0; i < lastSeenIndex.length; i++) {
+            lastSeenIndex[i] = -1;
+        }
+
+        int maxLength = 0;
+        int leftPointer = 0;
+
+        for (int rightPointer = 0; rightPointer < inputString.length(); rightPointer++) {
+            char currentCharacter = inputString.charAt(rightPointer);
+
+            if (lastSeenIndex[currentCharacter] >= leftPointer) {
+                leftPointer = lastSeenIndex[currentCharacter] + 1;
+            }
+            lastSeenIndex[currentCharacter] = rightPointer;
+
+            int currentLength = rightPointer - leftPointer + 1;
+            if (currentLength > maxLength) {
+                maxLength = currentLength;
+            }
+        }
+        return maxLength;
+    }
+
+    // ---------- Main Menu ----------
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+        Scanner userInput = new Scanner(System.in);
+
         while (true) {
             System.out.println("\n===== Assignment Menu =====");
             System.out.println("1. Expand encoded string");
@@ -123,44 +173,50 @@ public class AssignmentAll {
             System.out.println("5. Longest substring without repeating chars");
             System.out.println("0. Exit");
             System.out.print("Choose option: ");
-            int choice = sc.nextInt();
-            sc.nextLine(); // consume newline
+
+            int choice = userInput.nextInt();
+            userInput.nextLine(); // consume newline
 
             switch (choice) {
                 case 1:
                     System.out.print("Enter encoded string: ");
-                    String enc = sc.nextLine();
-                    System.out.println("Expanded: " + expand(enc));
+                    String encodedInput = userInput.nextLine();
+                    System.out.println("Expanded: " + expandEncodedString(encodedInput));
                     break;
+
                 case 2:
                     System.out.print("Enter string to compress: ");
-                    String s = sc.nextLine();
-                    System.out.println("Compressed: " + compressRuns(s));
+                    String inputString = userInput.nextLine();
+                    System.out.println("Compressed: " + compressRuns(inputString));
                     break;
+
                 case 3:
                     System.out.print("Enter number: ");
-                    int num = sc.nextInt();
-                    if (isPrime(num)) System.out.println("The given number is PRIME");
-                    else System.out.println("The given number is NOT prime");
+                    int primeCandidate = userInput.nextInt();
+                    if (isPrime(primeCandidate))
+                        System.out.println("The given number is PRIME");
+                    else
+                        System.out.println("The given number is NOT prime");
                     break;
+
                 case 4:
                     System.out.print("Enter number (1-1000): ");
-                    int n = sc.nextInt();
-                    try {
-                        System.out.println("In words: " + numberToWords(n));
-                    } catch (Exception e) {
-                        System.out.println("Error: " + e.getMessage());
-                    }
+                    int number = userInput.nextInt();
+                    System.out.println("In words: " + numberToWords(number));
                     break;
+
                 case 5:
                     System.out.print("Enter string: ");
-                    String str = sc.nextLine();
-                    System.out.println("Length of longest substring: " + lengthOfLongestSubstring(str));
+                    String inputForSubstring = userInput.nextLine();
+                    System.out.println("Length of longest substring: " +
+                            lengthOfLongestSubstring(inputForSubstring));
                     break;
+
                 case 0:
                     System.out.println("Exiting. Bye!");
-                    sc.close();
+                    userInput.close();
                     return;
+
                 default:
                     System.out.println("Invalid choice. Try again.");
             }
